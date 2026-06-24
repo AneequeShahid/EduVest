@@ -127,23 +127,29 @@ class _GoalsPageState extends ConsumerState<GoalsPage> {
       body: Stack(
         children: [
           SafeArea(
-            child: Column(
-              children: [
-                const AppTopBar(),
-                Expanded(
-                  child: goalsAsync.when(
-                    loading: () => const Center(
-                        child: CircularProgressIndicator(
-                            color: AppColors.primary)),
-                    error: (e, _) => ErrorState(
-                      message: e.toString(),
-                      onRetry: () => ref.invalidate(goalsStreamProvider),
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 600),
+                child: Column(
+                  children: [
+                    const AppTopBar(),
+                    Expanded(
+                      child: goalsAsync.when(
+                        loading: () => const Center(
+                            child: CircularProgressIndicator(
+                                color: AppColors.primary)),
+                        error: (e, _) => ErrorState(
+                          message: e.toString(),
+                          onRetry: () => ref.invalidate(goalsStreamProvider),
+                        ),
+                        data: (goals) => _buildBody(goals, selected),
+                      ),
                     ),
-                    data: (goals) => _buildBody(goals, selected),
-                  ),
+                    const AppBottomNavBar(currentIndex: 4),
+                  ],
                 ),
-                const AppBottomNavBar(currentIndex: 4),
-              ],
+              ),
             ),
           ),
           if (_justCompleted != null)
