@@ -45,34 +45,40 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
         leading: BackButton(onPressed: () => context.pop()),
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSizes.lg),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              children: [
-                TextFormField(
-                  controller: _nameCtrl,
-                  validator: (v) =>
-                      Validators.required(v, fieldName: 'Name'),
-                  decoration:
-                      const InputDecoration(labelText: AppStrings.fullName),
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: Padding(
+              padding: const EdgeInsets.all(AppSizes.lg),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    TextFormField(
+                      controller: _nameCtrl,
+                      validator: (v) =>
+                          Validators.required(v, fieldName: 'Name'),
+                      decoration:
+                          const InputDecoration(labelText: AppStrings.fullName),
+                    ),
+                    const SizedBox(height: AppSizes.xl),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: state.isLoading ? null : _onSave,
+                        child: state.isLoading
+                            ? const SizedBox(
+                                width: AppSizes.space20,
+                                height: AppSizes.space20,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2, color: Colors.white))
+                            : const Text(AppStrings.saveChanges),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: AppSizes.xl),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: state.isLoading ? null : _onSave,
-                    child: state.isLoading
-                        ? const SizedBox(
-                            width: AppSizes.space20,
-                            height: AppSizes.space20,
-                            child: CircularProgressIndicator(
-                                strokeWidth: 2, color: Colors.white))
-                        : const Text(AppStrings.saveChanges),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ),
