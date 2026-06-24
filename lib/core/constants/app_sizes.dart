@@ -68,4 +68,15 @@ class AppSizes {
   // Padding
   static const double pagePadding = 20.0;
   static const double cardPadding = 16.0;
+
+  // Responsive breakpoints
+  /// Maximum width for a single-column content area on tablet / web.
+  static const double kMaxContentWidth = 600.0;
+
+  /// Screen width at which the layout switches to a wide/tablet mode.
+  static const double kWideBreakpoint = 768.0;
+
+  /// Screen width at which the layout switches to a desktop mode.
+  static const double kDesktopBreakpoint = 1024.0;
 }
+
