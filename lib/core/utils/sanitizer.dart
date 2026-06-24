@@ -6,13 +6,17 @@ class Sanitizer {
 
   static const int maxDescriptionLength = 200;
   static const int maxNameLength = 50;
+  static const int maxCategoryLength = 30;
 
   static final RegExp _htmlTag = RegExp(r'<[^>]*>');
   static final RegExp _multiSpace = RegExp(r'\s+');
+  static final RegExp _scriptTag =
+      RegExp(r'<script[^>]*>[\s\S]*?</script>', caseSensitive: false);
 
-  /// Removes HTML tags, collapses whitespace and trims.
+  /// Removes HTML/script tags, collapses whitespace and trims.
   static String stripHtml(String input) {
     return input
+        .replaceAll(_scriptTag, '')
         .replaceAll(_htmlTag, '')
         .replaceAll(_multiSpace, ' ')
         .trim();
@@ -32,4 +36,15 @@ class Sanitizer {
 
   /// Sanitized name (max 50 chars).
   static String name(String input) => clean(input, maxNameLength);
+
+  /// Sanitized category label (max 30 chars).
+  static String category(String input) => clean(input, maxCategoryLength);
+
+  /// Sanitizes an amount string: strips non-numeric chars except `.` and `-`.
+  ///
+  /// Returns `null` if the result cannot be parsed to a valid number.
+  static double? amount(String input) {
+    final cleaned = input.replaceAll(RegExp(r'[^\d.\-]'), '').trim();
+    return double.tryParse(cleaned);
+  }
 }
