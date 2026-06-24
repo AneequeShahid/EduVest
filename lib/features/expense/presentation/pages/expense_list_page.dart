@@ -7,6 +7,7 @@ import '../../../../core/routes/route_names.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../../../core/utils/currency_utils.dart';
 import '../../../../core/utils/date_utils.dart';
+import '../../../../core/utils/debouncer.dart';
 import '../../../../core/widgets/category_icon.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/error_state.dart';
@@ -14,28 +15,74 @@ import '../../domain/entities/expense_entity.dart';
 import '../providers/expense_provider.dart';
 import 'add_expense_page.dart';
 
-class ExpenseListPage extends ConsumerWidget {
+class ExpenseListPage extends ConsumerStatefulWidget {
   const ExpenseListPage({super.key});
 
+  @override
+  ConsumerState<ExpenseListPage> createState() => _ExpenseListPageState();
+}
+
+class _ExpenseListPageState extends ConsumerState<ExpenseListPage> {
   static const _months = [
     'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
     'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
   ];
 
+  final _searchCtrl = TextEditingController();
+  final _debouncer = Debouncer(duration: const Duration(milliseconds: 350));
+  String _searchQuery = '';
+  bool _showSearch = false;
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  void dispose() {
+    _searchCtrl.dispose();
+    _debouncer.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final filter = ref.watch(expenseFilterControllerProvider);
     final expensesAsync = ref.watch(expensesStreamProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Expenses'),
+        title: _showSearch
+            ? TextField(
+                controller: _searchCtrl,
+                autofocus: true,
+                decoration: const InputDecoration(
+                  hintText: 'Search expenses…',
+                  border: InputBorder.none,
+                ),
+                onChanged: (q) => _debouncer.run(() {
+                  setState(() => _searchQuery = q.trim().toLowerCase());
+                }),
+              )
+            : const Text('Expenses'),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () =>
-              context.canPop() ? context.pop() : context.go(RouteNames.home),
+          icon: Icon(_showSearch ? Icons.close : Icons.arrow_back),
+          onPressed: () {
+            if (_showSearch) {
+              _searchCtrl.clear();
+              setState(() {
+                _showSearch = false;
+                _searchQuery = '';
+              });
+            } else {
+              context.canPop() ? context.pop() : context.go(RouteNames.home);
+            }
+          },
         ),
+        actions: [
+          IconButton(
+            key: const Key('search-expenses-button'),
+            icon: Icon(_showSearch ? Icons.search_off : Icons.search),
+            tooltip: 'Search',
+            onPressed: () => setState(() => _showSearch = !_showSearch),
+          ),
+        ],
       ),
       body: Align(
         alignment: Alignment.topCenter,
@@ -43,12 +90,13 @@ class ExpenseListPage extends ConsumerWidget {
           constraints: const BoxConstraints(maxWidth: 600),
           child: Column(
             children: [
-              _MonthFilter(
-                selectedMonth: filter.month,
-                months: _months,
-                onSelected: (m) =>
-                    ref.read(expenseFilterControllerProvider.notifier).setMonth(m),
-              ),
+              if (!_showSearch)
+                _MonthFilter(
+                  selectedMonth: filter.month,
+                  months: _months,
+                  onSelected: (m) =>
+                      ref.read(expenseFilterControllerProvider.notifier).setMonth(m),
+                ),
               Expanded(
                 child: expensesAsync.when(
                   loading: () => const Center(
@@ -58,10 +106,26 @@ class ExpenseListPage extends ConsumerWidget {
                     onRetry: () => ref.invalidate(expensesStreamProvider),
                   ),
                   data: (expenses) {
-                    if (expenses.isEmpty) {
-                      return const EmptyState(
-                        title: 'No expenses',
-                        message: 'No expenses for this month yet.',
+                    // Apply search filter client-side.
+                    final filtered = _searchQuery.isEmpty
+                        ? expenses
+                        : expenses.where((e) {
+                            return e.description
+                                    .toLowerCase()
+                                    .contains(_searchQuery) ||
+                                e.category
+                                    .toLowerCase()
+                                    .contains(_searchQuery);
+                          }).toList();
+
+                    if (filtered.isEmpty) {
+                      return EmptyState(
+                        title: _searchQuery.isEmpty
+                            ? 'No expenses'
+                            : 'No results',
+                        message: _searchQuery.isEmpty
+                            ? 'No expenses for this month yet.'
+                            : 'No expenses match "$_searchQuery".',
                         icon: Icons.receipt_long_outlined,
                       );
                     }
@@ -69,7 +133,7 @@ class ExpenseListPage extends ConsumerWidget {
                       color: AppColors.primary,
                       onRefresh: () async =>
                           ref.invalidate(expensesStreamProvider),
-                      child: _GroupedList(expenses: expenses),
+                      child: _GroupedList(expenses: filtered),
                     );
                   },
                 ),
@@ -253,9 +317,23 @@ class _ExpenseTile extends ConsumerWidget {
                     ],
                   ),
                 ),
-                Text(
-                  '$sign${formatCurrency(expense.amount)}',
-                  style: AppTextStyles.titleLarge.copyWith(color: amountColor),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      '$sign${formatCurrency(expense.amount)}',
+                      style:
+                          AppTextStyles.titleLarge.copyWith(color: amountColor),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      timeAgo(expense.date),
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.textTertiary,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
