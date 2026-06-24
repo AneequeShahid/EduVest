@@ -37,40 +37,46 @@ class ExpenseListPage extends ConsumerWidget {
               context.canPop() ? context.pop() : context.go(RouteNames.home),
         ),
       ),
-      body: Column(
-        children: [
-          _MonthFilter(
-            selectedMonth: filter.month,
-            months: _months,
-            onSelected: (m) =>
-                ref.read(expenseFilterControllerProvider.notifier).setMonth(m),
-          ),
-          Expanded(
-            child: expensesAsync.when(
-              loading: () => const Center(
-                  child: CircularProgressIndicator(color: AppColors.primary)),
-              error: (e, _) => ErrorState(
-                message: e.toString(),
-                onRetry: () => ref.invalidate(expensesStreamProvider),
+      body: Align(
+        alignment: Alignment.topCenter,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: Column(
+            children: [
+              _MonthFilter(
+                selectedMonth: filter.month,
+                months: _months,
+                onSelected: (m) =>
+                    ref.read(expenseFilterControllerProvider.notifier).setMonth(m),
               ),
-              data: (expenses) {
-                if (expenses.isEmpty) {
-                  return const EmptyState(
-                    title: 'No expenses',
-                    message: 'No expenses for this month yet.',
-                    icon: Icons.receipt_long_outlined,
-                  );
-                }
-                return RefreshIndicator(
-                  color: AppColors.primary,
-                  onRefresh: () async =>
-                      ref.invalidate(expensesStreamProvider),
-                  child: _GroupedList(expenses: expenses),
-                );
-              },
-            ),
+              Expanded(
+                child: expensesAsync.when(
+                  loading: () => const Center(
+                      child: CircularProgressIndicator(color: AppColors.primary)),
+                  error: (e, _) => ErrorState(
+                    message: e.toString(),
+                    onRetry: () => ref.invalidate(expensesStreamProvider),
+                  ),
+                  data: (expenses) {
+                    if (expenses.isEmpty) {
+                      return const EmptyState(
+                        title: 'No expenses',
+                        message: 'No expenses for this month yet.',
+                        icon: Icons.receipt_long_outlined,
+                      );
+                    }
+                    return RefreshIndicator(
+                      color: AppColors.primary,
+                      onRefresh: () async =>
+                          ref.invalidate(expensesStreamProvider),
+                      child: _GroupedList(expenses: expenses),
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
