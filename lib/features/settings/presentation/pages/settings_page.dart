@@ -41,13 +41,17 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         leading: BackButton(onPressed: () => context.pop()),
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: AppSizes.pagePadding),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: AppSizes.md),
-              _buildProfileCard(context),
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: AppSizes.pagePadding),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: AppSizes.md),
+                  _buildProfileCard(context),
               const SizedBox(height: AppSizes.lg),
               const Text(AppStrings.notifications, style: _sectionStyle),
               const SizedBox(height: AppSizes.space12),
