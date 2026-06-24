@@ -70,86 +70,92 @@ class BudgetPage extends ConsumerWidget {
               child: const Icon(Icons.add, color: Colors.white),
             ),
       body: SafeArea(
-        child: Column(
-          children: [
-            const AppTopBar(),
-            Expanded(
-              child: budgetAsync.when(
-                loading: () => const Padding(
-                  padding: EdgeInsets.all(20),
-                  child: BudgetShimmer(),
-                ),
-                error: (e, _) => ErrorState(
-                  message: e.toString(),
-                  onRetry: () => ref.invalidate(budgetStreamProvider),
-                ),
-                data: (budget) {
-                  if (budget == null) {
-                    return Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const EmptyState(
-                          title: 'No budget yet',
-                          message:
-                              'Set a monthly limit to start tracking your spending.',
-                          icon: Icons.account_balance_wallet_outlined,
-                        ),
-                        const SizedBox(height: 16),
-                        Padding(
-                          padding:
-                              const EdgeInsets.symmetric(horizontal: 40),
-                          child: AppButton(
-                            key: const Key('set-budget-button'),
-                            label: 'Set Monthly Budget',
-                            onPressed: () => _openSetBudget(context, ref),
-                          ),
-                        ),
-                      ],
-                    );
-                  }
-                  return ListView(
-                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: Column(
+              children: [
+                const AppTopBar(),
+                Expanded(
+                  child: budgetAsync.when(
+                    loading: () => const Padding(
+                      padding: EdgeInsets.all(20),
+                      child: BudgetShimmer(),
+                    ),
+                    error: (e, _) => ErrorState(
+                      message: e.toString(),
+                      onRetry: () => ref.invalidate(budgetStreamProvider),
+                    ),
+                    data: (budget) {
+                      if (budget == null) {
+                        return Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const EmptyState(
+                              title: 'No budget yet',
+                              message:
+                                  'Set a monthly limit to start tracking your spending.',
+                              icon: Icons.account_balance_wallet_outlined,
+                            ),
+                            const SizedBox(height: 16),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 40),
+                              child: AppButton(
+                                key: const Key('set-budget-button'),
+                                label: 'Set Monthly Budget',
+                                onPressed: () => _openSetBudget(context, ref),
+                              ),
+                            ),
+                          ],
+                        );
+                      }
+                      return ListView(
+                        padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
                         children: [
-                          Text('Budget', style: AppTextStyles.displayMedium),
-                          TextButton.icon(
-                            key: const Key('edit-budget-button'),
-                            onPressed: () => _openSetBudget(context, ref,
-                                initialLimit: budget.totalLimit),
-                            icon: const Icon(Icons.edit_outlined, size: 18),
-                            label: const Text('Edit'),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('Budget', style: AppTextStyles.displayMedium),
+                              TextButton.icon(
+                                key: const Key('edit-budget-button'),
+                                onPressed: () => _openSetBudget(context, ref,
+                                    initialLimit: budget.totalLimit),
+                                icon: const Icon(Icons.edit_outlined, size: 18),
+                                label: const Text('Edit'),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      BudgetUsageMeter(budget: budget),
-                      const SizedBox(height: 24),
-                      Text('Categories', style: AppTextStyles.headlineMedium),
-                      const SizedBox(height: 12),
-                      if (budget.categories.isEmpty)
-                        Text('No categories yet. Tap + to add one.',
-                            style: AppTextStyles.bodyMedium)
-                      else
-                        for (final c in budget.categories) ...[
-                          CategoryBudgetCard(
-                            category: c,
-                            onMarkPaid: (paid) => ref
-                                .read(budgetNotifierProvider.notifier)
-                                .markAsPaid(c.id, paid),
-                          ),
+                          const SizedBox(height: 16),
+                          BudgetUsageMeter(budget: budget),
+                          const SizedBox(height: 24),
+                          Text('Categories', style: AppTextStyles.headlineMedium),
                           const SizedBox(height: 12),
+                          if (budget.categories.isEmpty)
+                            Text('No categories yet. Tap + to add one.',
+                                style: AppTextStyles.bodyMedium)
+                          else
+                            for (final c in budget.categories) ...[
+                              CategoryBudgetCard(
+                                category: c,
+                                onMarkPaid: (paid) => ref
+                                    .read(budgetNotifierProvider.notifier)
+                                    .markAsPaid(c.id, paid),
+                              ),
+                              const SizedBox(height: 12),
+                            ],
+                          const SizedBox(height: 12),
+                          const _SmartInsightSection(),
                         ],
-                      const SizedBox(height: 12),
-                      const _SmartInsightSection(),
-                    ],
-                  );
-                },
-              ),
+                      );
+                    },
+                  ),
+                ),
+                const AppBottomNavBar(currentIndex: 3),
+              ],
             ),
-            const AppBottomNavBar(currentIndex: 3),
-          ],
+          ),
         ),
       ),
       ),
