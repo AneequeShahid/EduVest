@@ -26,21 +26,27 @@ class InsightsPage extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: Column(
-          children: [
-            const AppTopBar(),
-            Expanded(
-              child: insightsAsync.when(
-                loading: () => const _InsightsShimmer(),
-                error: (e, _) => ErrorState(
-                  message: e.toString(),
-                  onRetry: () => ref.invalidate(insightsProvider),
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: Column(
+              children: [
+                const AppTopBar(),
+                Expanded(
+                  child: insightsAsync.when(
+                    loading: () => const _InsightsShimmer(),
+                    error: (e, _) => ErrorState(
+                      message: e.toString(),
+                      onRetry: () => ref.invalidate(insightsProvider),
+                    ),
+                    data: (insights) => _buildContent(context, insights),
+                  ),
                 ),
-                data: (insights) => _buildContent(context, insights),
-              ),
+                const AppBottomNavBar(currentIndex: 1),
+              ],
             ),
-            const AppBottomNavBar(currentIndex: 1),
-          ],
+          ),
         ),
       ),
     );
