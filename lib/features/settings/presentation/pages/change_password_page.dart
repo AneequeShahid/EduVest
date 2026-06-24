@@ -59,61 +59,67 @@ class _ChangePasswordPageState extends ConsumerState<ChangePasswordPage> {
         leading: BackButton(onPressed: () => context.pop()),
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppSizes.lg),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                TextFormField(
-                  key: const Key('current-password-field'),
-                  controller: _currentCtrl,
-                  obscureText: _obscure,
-                  decoration: const InputDecoration(
-                      labelText: AppStrings.currentPasswordLabel),
-                  validator: (v) => (v == null || v.isEmpty)
-                      ? AppStrings.currentPasswordRequired
-                      : null,
-                ),
-                const SizedBox(height: AppSizes.md),
-                TextFormField(
-                  key: const Key('new-password-field'),
-                  controller: _newCtrl,
-                  obscureText: _obscure,
-                  decoration: InputDecoration(
-                    labelText: AppStrings.newPasswordLabel,
-                    suffixIcon: IconButton(
-                      icon: Icon(_obscure
-                          ? Icons.visibility_off
-                          : Icons.visibility),
-                      onPressed: () => setState(() => _obscure = !_obscure),
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(AppSizes.lg),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    TextFormField(
+                      key: const Key('current-password-field'),
+                      controller: _currentCtrl,
+                      obscureText: _obscure,
+                      decoration: const InputDecoration(
+                          labelText: AppStrings.currentPasswordLabel),
+                      validator: (v) => (v == null || v.isEmpty)
+                          ? AppStrings.currentPasswordRequired
+                          : null,
                     ),
-                  ),
-                  validator: Validators.password,
+                    const SizedBox(height: AppSizes.md),
+                    TextFormField(
+                      key: const Key('new-password-field'),
+                      controller: _newCtrl,
+                      obscureText: _obscure,
+                      decoration: InputDecoration(
+                        labelText: AppStrings.newPasswordLabel,
+                        suffixIcon: IconButton(
+                          icon: Icon(_obscure
+                              ? Icons.visibility_off
+                              : Icons.visibility),
+                          onPressed: () => setState(() => _obscure = !_obscure),
+                        ),
+                      ),
+                      validator: Validators.password,
+                    ),
+                    const SizedBox(height: AppSizes.md),
+                    TextFormField(
+                      key: const Key('confirm-password-field'),
+                      controller: _confirmCtrl,
+                      obscureText: _obscure,
+                      decoration: const InputDecoration(
+                          labelText: AppStrings.confirmNewPasswordLabel),
+                      validator: (v) =>
+                          Validators.confirmPassword(v, _newCtrl.text),
+                    ),
+                    const SizedBox(height: AppSizes.xl),
+                    ElevatedButton(
+                      onPressed: state.isLoading ? null : _onSubmit,
+                      child: state.isLoading
+                          ? const SizedBox(
+                              width: AppSizes.space20,
+                              height: AppSizes.space20,
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2, color: Colors.white))
+                          : const Text(AppStrings.updatePasswordButton),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: AppSizes.md),
-                TextFormField(
-                  key: const Key('confirm-password-field'),
-                  controller: _confirmCtrl,
-                  obscureText: _obscure,
-                  decoration: const InputDecoration(
-                      labelText: AppStrings.confirmNewPasswordLabel),
-                  validator: (v) =>
-                      Validators.confirmPassword(v, _newCtrl.text),
-                ),
-                const SizedBox(height: AppSizes.xl),
-                ElevatedButton(
-                  onPressed: state.isLoading ? null : _onSubmit,
-                  child: state.isLoading
-                      ? const SizedBox(
-                          width: AppSizes.space20,
-                          height: AppSizes.space20,
-                          child: CircularProgressIndicator(
-                              strokeWidth: 2, color: Colors.white))
-                      : const Text(AppStrings.updatePasswordButton),
-                ),
-              ],
+              ),
             ),
           ),
         ),
