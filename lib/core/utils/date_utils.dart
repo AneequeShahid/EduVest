@@ -17,6 +17,36 @@ String formatDateShort(DateTime date) {
   return DateFormat('MMM d, yyyy').format(date);
 }
 
+/// Human-readable "time ago" string.
+///
+/// Examples:
+/// - `"just now"` (< 1 min)
+/// - `"5 minutes ago"` (< 1 hour)
+/// - `"2 hours ago"` (< 24 hours)
+/// - `"Yesterday"` (1 day ago)
+/// - `"3 days ago"` (< 7 days)
+/// - Falls back to [formatDateShort] for anything older.
+String timeAgo(DateTime date) {
+  final now = DateTime.now();
+  final diff = now.difference(date);
+
+  if (diff.inSeconds < 60) return 'just now';
+  if (diff.inMinutes < 60) {
+    final m = diff.inMinutes;
+    return '$m ${m == 1 ? "minute" : "minutes"} ago';
+  }
+  if (diff.inHours < 24) {
+    final h = diff.inHours;
+    return '$h ${h == 1 ? "hour" : "hours"} ago';
+  }
+  if (diff.inDays == 1) return 'Yesterday';
+  if (diff.inDays < 7) {
+    final d = diff.inDays;
+    return '$d ${d == 1 ? "day" : "days"} ago';
+  }
+  return formatDateShort(date);
+}
+
 /// `3 → "March"`. Accepts 1–12.
 String getMonthName(int month) {
   const names = [
@@ -44,4 +74,10 @@ class AppDateUtils {
 
   static bool isSameMonth(DateTime a, DateTime b) =>
       a.year == b.year && a.month == b.month;
+
+  /// Convenience wrapper for [timeAgo].
+  static String timeAgo(DateTime date) => _timeAgo(date);
 }
+
+// Alias so the static wrapper can reach the top-level function unambiguously.
+String _timeAgo(DateTime date) => timeAgo(date);
