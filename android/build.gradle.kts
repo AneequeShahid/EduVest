@@ -5,6 +5,19 @@ allprojects {
     }
 }
 
+// Fix for plugins that don't declare namespace (AGP 8+ requirement)
+subprojects {
+    afterEvaluate {
+        if (plugins.hasPlugin("com.android.library")) {
+            extensions.configure<com.android.build.gradle.LibraryExtension> {
+                if (namespace == null) {
+                    namespace = group.toString()
+                }
+            }
+        }
+    }
+}
+
 val newBuildDir: Directory =
     rootProject.layout.buildDirectory
         .dir("../../build")

@@ -1,0 +1,24 @@
+{
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "storage": {
+    "rules": "storage.rules"
+  },
+  "flutter": {
+    "platforms": {
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "educest1",
+          "configurations": {
+            "android": "1:636538524620:android:d3c8770f3be9b864fc8369",
+            "ios": "1:636538524620:ios:213abdf0ed11c210fc8369",
+            "macos": "1:636538524620:ios:213abdf0ed11c210fc8369",
+            "web": "1:636538524620:web:0dcb83bfc7acaba2fc8369"
+          }
+        }
+      }
+    }
+  }
+}
