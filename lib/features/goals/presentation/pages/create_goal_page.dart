@@ -117,13 +117,17 @@ class _CreateGoalPageState extends ConsumerState<CreateGoalPage> {
                 context.canPop() ? context.pop() : context.go(RouteNames.goals)),
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                 // Live preview.
                 GoalCard(
                     goal: _previewGoal(), isSelected: false, onTap: () {}),
@@ -250,6 +254,7 @@ class _CreateGoalPageState extends ConsumerState<CreateGoalPage> {
           ),
         ),
       ),
-    );
+    ),
+  );
   }
 }
