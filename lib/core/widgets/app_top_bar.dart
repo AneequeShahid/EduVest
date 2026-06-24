@@ -27,39 +27,46 @@ class AppTopBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authStateProvider).valueOrNull;
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-          AppSizes.space20, AppSizes.space12, AppSizes.sm, AppSizes.sm),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          GestureDetector(
-            key: const Key('top-bar-settings'),
-            onTap: () => context.push(RouteNames.settings),
-            child: CircleAvatar(
-              radius: AppSizes.space20,
-              backgroundColor: AppColors.surfaceSecondary,
-              child: Text(
-                _initials(user?.name),
-                style: AppTextStyles.titleMedium
-                    .copyWith(color: AppColors.primary),
+    return Align(
+      alignment: Alignment.topCenter,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 720),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(
+              AppSizes.space20, AppSizes.space12, AppSizes.sm, AppSizes.sm),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              GestureDetector(
+                key: const Key('top-bar-settings'),
+                onTap: () => context.push(RouteNames.settings),
+                child: CircleAvatar(
+                  radius: AppSizes.space20,
+                  backgroundColor: AppColors.surfaceSecondary,
+                  child: Text(
+                    _initials(user?.name),
+                    style: AppTextStyles.titleMedium
+                        .copyWith(color: AppColors.primary),
+                  ),
+                ),
               ),
-            ),
+              Text(
+                AppStrings.appName,
+                style: AppTextStyles.displayMedium.copyWith(
+                  color: AppColors.primary,
+                  fontSize: AppSizes.font22,
+                ),
+              ),
+              IconButton(
+                onPressed: () {},
+                icon: const Icon(Icons.notifications_none_rounded,
+                    color: AppColors.textPrimary),
+              ),
+            ],
           ),
-          Text(
-            AppStrings.appName,
-            style: AppTextStyles.displayMedium.copyWith(
-              color: AppColors.primary,
-              fontSize: AppSizes.font22,
-            ),
-          ),
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.notifications_none_rounded,
-                color: AppColors.textPrimary),
-          ),
-        ],
+        ),
       ),
     );
   }
 }
+
