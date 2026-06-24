@@ -34,56 +34,62 @@ class HomePage extends ConsumerWidget {
       child: Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: Column(
-          children: [
-            const AppTopBar(),
-            Expanded(
-              child: RefreshIndicator(
-                color: AppColors.primary,
-                onRefresh: () =>
-                    ref.read(homeNotifierProvider.notifier).refresh(),
-                child: ListView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-                  children: [
-                    dashboardAsync.when(
-                      loading: () => const DashboardShimmer(),
-                      error: (e, _) => Padding(
-                        padding: const EdgeInsets.only(top: 40),
-                        child: ErrorState(
-                          message: _stripException(e),
-                          onRetry: () => ref
-                              .read(homeNotifierProvider.notifier)
-                              .refresh(),
-                        ),
-                      ),
-                      data: (dashboard) => Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          BalanceCard(
-                            totalBalance: dashboard.totalBalance,
-                            changePercent: dashboard.balanceChangePercent,
-                          ),
-                          const SizedBox(height: 24),
-                          BudgetSummaryCard(dashboard: dashboard),
-                          if (dashboard.activeGoal != null) ...[
-                            const SizedBox(height: 20),
-                            GoalPreviewCard(
-                              goal: dashboard.activeGoal!,
-                              onTap: () => context.go(RouteNames.goals),
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: Column(
+              children: [
+                const AppTopBar(),
+                Expanded(
+                  child: RefreshIndicator(
+                    color: AppColors.primary,
+                    onRefresh: () =>
+                        ref.read(homeNotifierProvider.notifier).refresh(),
+                    child: ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                      children: [
+                        dashboardAsync.when(
+                          loading: () => const DashboardShimmer(),
+                          error: (e, _) => Padding(
+                            padding: const EdgeInsets.only(top: 40),
+                            child: ErrorState(
+                              message: _stripException(e),
+                              onRetry: () => ref
+                                  .read(homeNotifierProvider.notifier)
+                                  .refresh(),
                             ),
-                          ],
-                          const SizedBox(height: 24),
-                          const _RecentTransactionsSection(),
-                        ],
-                      ),
+                          ),
+                          data: (dashboard) => Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              BalanceCard(
+                                totalBalance: dashboard.totalBalance,
+                                changePercent: dashboard.balanceChangePercent,
+                              ),
+                              const SizedBox(height: 24),
+                              BudgetSummaryCard(dashboard: dashboard),
+                              if (dashboard.activeGoal != null) ...[
+                                const SizedBox(height: 20),
+                                GoalPreviewCard(
+                                  goal: dashboard.activeGoal!,
+                                  onTap: () => context.go(RouteNames.goals),
+                                ),
+                              ],
+                              const SizedBox(height: 24),
+                              const _RecentTransactionsSection(),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
+                const AppBottomNavBar(currentIndex: 0),
+              ],
             ),
-            const AppBottomNavBar(currentIndex: 0),
-          ],
+          ),
         ),
       ),
       ),
