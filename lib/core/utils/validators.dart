@@ -3,6 +3,8 @@
 final RegExp _emailRegExp =
     RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
 
+final RegExp _phoneRegExp = RegExp(r'^\+?[0-9\s\-().]{7,15}$');
+
 String? validateEmail(String? value) {
   if (value == null || value.trim().isEmpty) return 'Email is required';
   if (!_emailRegExp.hasMatch(value.trim())) {
@@ -31,11 +33,36 @@ String? validateRequired(String? value, String fieldName) {
   return null;
 }
 
+/// Validates a person's name: non-empty, at least 2 characters.
+String? validateName(String? value) {
+  if (value == null || value.trim().isEmpty) return 'Name is required';
+  if (value.trim().length < 2) return 'Name must be at least 2 characters';
+  return null;
+}
+
+/// Validates an international phone number (E.164-ish, 7-15 digits).
+String? validatePhone(String? value) {
+  if (value == null || value.trim().isEmpty) return 'Phone number is required';
+  if (!_phoneRegExp.hasMatch(value.trim())) {
+    return 'Enter a valid phone number';
+  }
+  return null;
+}
+
 String? validateAmount(String? value) {
   if (value == null || value.trim().isEmpty) return 'Amount is required';
   final parsed = double.tryParse(value.trim());
   if (parsed == null) return 'Enter a valid number';
   if (parsed <= 0) return 'Amount must be greater than zero';
+  return null;
+}
+
+/// Validates a positive (including zero) monetary amount.
+String? validatePositiveAmount(String? value) {
+  if (value == null || value.trim().isEmpty) return 'Amount is required';
+  final parsed = double.tryParse(value.trim());
+  if (parsed == null) return 'Enter a valid number';
+  if (parsed < 0) return 'Amount cannot be negative';
   return null;
 }
 
@@ -50,8 +77,15 @@ class Validators {
   static String? required(String? value, {String fieldName = 'Field'}) =>
       validateRequired(value, fieldName);
 
+  static String? name(String? value) => validateName(value);
+
+  static String? phone(String? value) => validatePhone(value);
+
   static String? amount(String? value) => validateAmount(value);
+
+  static String? positiveAmount(String? value) => validatePositiveAmount(value);
 
   static String? confirmPassword(String? value, String password) =>
       validateConfirmPassword(value, password);
 }
+
