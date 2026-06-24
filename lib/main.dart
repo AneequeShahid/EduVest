@@ -24,9 +24,13 @@ void main() async {
       statusBarIconBrightness: Brightness.dark,
     ),
   );
+  // Allow all orientations — landscape is fully supported on tablet / iPad.
+  // Portrait-only was too restrictive for wider devices.
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
+    DeviceOrientation.landscapeLeft,
+    DeviceOrientation.landscapeRight,
   ]);
 
   // ── Firebase init ──────────────────────────────────────────────────────────
