@@ -171,13 +171,19 @@ class _AddExpensePageState extends ConsumerState<AddExpensePage> {
       body: LoadingOverlay(
         isLoading: _saving,
         child: SafeArea(
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _buildHeader(),
-                _buildFormCard(),
-              ],
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _buildHeader(),
+                    _buildFormCard(),
+                  ],
+                ),
+              ),
             ),
           ),
         ),
