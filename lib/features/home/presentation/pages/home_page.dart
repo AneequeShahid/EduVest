@@ -133,13 +133,34 @@ class _RecentTransactionsSection extends ConsumerWidget {
           data: (transactions) {
             if (transactions.isEmpty) {
               return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 32),
-                child: Center(
-                  child: Text(
-                    'No transactions yet. Add your first expense!',
-                    textAlign: TextAlign.center,
-                    style: AppTextStyles.bodyMedium,
-                  ),
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 16),
+                    const Icon(
+                      Icons.receipt_long_outlined,
+                      size: 48,
+                      color: AppColors.textTertiary,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'No transactions yet',
+                      style: AppTextStyles.titleMedium,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Add your first expense to start tracking!',
+                      style: AppTextStyles.bodyMedium,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    TextButton.icon(
+                      onPressed: () => context.push(RouteNames.addExpense),
+                      icon: const Icon(Icons.add, size: 18),
+                      label: const Text('Add Expense'),
+                    ),
+                  ],
                 ),
               );
             }
