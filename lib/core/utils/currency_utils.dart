@@ -6,6 +6,26 @@ final NumberFormat _currencyFormat =
 /// `1234.56 → "$1,234.56"`, `0 → "$0.00"`.
 String formatCurrency(double amount) => _currencyFormat.format(amount);
 
+/// Format [amount] with a custom [symbol] and [locale].
+///
+/// Common examples:
+/// ```dart
+/// formatWithSymbol(1500, symbol: 'Rs', locale: 'en_PK') // "Rs1,500.00"
+/// formatWithSymbol(1500, symbol: '£', locale: 'en_GB')  // "£1,500.00"
+/// ```
+String formatWithSymbol(
+  double amount, {
+  String symbol = '\$',
+  String locale = 'en_US',
+  int decimalDigits = 2,
+}) {
+  return NumberFormat.currency(
+    locale: locale,
+    symbol: symbol,
+    decimalDigits: decimalDigits,
+  ).format(amount);
+}
+
 /// Compact form: `1200 → "$1.2K"`, `1500000 → "$1.5M"`.
 /// Values below 1,000 fall back to full currency formatting.
 String formatCompact(double amount) {
@@ -18,6 +38,22 @@ String formatCompact(double amount) {
     return '$sign\$${_trim(abs / 1000)}K';
   }
   return formatCurrency(amount);
+}
+
+/// Formats a percentage value: `0.753 → "75.3%"`, `1.0 → "100%"`.
+///
+/// Pass [decimals] to control precision (default 1).
+String formatPercentage(double fraction, {int decimals = 1}) {
+  final percent = (fraction * 100).clamp(0.0, 100.0);
+  if (decimals == 0) return '${percent.round()}%';
+  return '${percent.toStringAsFixed(decimals)}%';
+}
+
+/// Formats a change value with a leading + / − sign: `+12.5%` or `-3.2%`.
+String formatChangePercent(double fraction, {int decimals = 1}) {
+  final percent = fraction * 100;
+  final sign = percent >= 0 ? '+' : '';
+  return '$sign${percent.toStringAsFixed(decimals)}%';
 }
 
 String _trim(double v) {
@@ -40,6 +76,12 @@ class CurrencyUtils {
 
   static double parse(String value) =>
       double.tryParse(value.replaceAll(RegExp(r'[^\d.-]'), '')) ?? 0.0;
+
+  static String percentage(double fraction, {int decimals = 1}) =>
+      formatPercentage(fraction, decimals: decimals);
+
+  static String changePercent(double fraction, {int decimals = 1}) =>
+      formatChangePercent(fraction, decimals: decimals);
 }
 
 // Alias so the static wrapper can reach the top-level function unambiguously.
