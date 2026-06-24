@@ -1,143 +1,230 @@
-# EduVest — Firebase Backend Integration Guide
+# EduVest 🎓💰
+> **Student Personal Finance App** — Track expenses, set savings goals, and manage your education budget — all in one place.
 
-## What Was Added
-
-All 12 Firebase requirements from the architecture prompt have been implemented. Here is a summary of every new file and what changed.
-
----
-
-## New Files Created
-
-### Auth Feature (`lib/features/auth/`)
-| File | Purpose |
-|------|---------|
-| `data/datasources/auth_firebase_datasource.dart` | Calls `FirebaseAuth.instance.signInAnonymously()` |
-| `data/datasources/auth_repository_impl.dart` | Implements `AuthRepository` via datasource |
-| `domain/repositories/auth_repository.dart` | Abstract interface |
-| `domain/usecases/sign_in_anonymously_usecase.dart` | Called once in `main.dart` before `runApp()` |
-| `domain/usecases/get_current_uid_usecase.dart` | Exposes uid after sign-in |
-
-### Expense Feature — updated files
-| File | What Changed |
-|------|-------------|
-| `data/datasources/expense_firebase_datasource.dart` | **New** — replaces `expense_local_datasource.dart`. Writes to `users/{uid}/expenses`, uploads receipts to Storage |
-| `data/datasources/expense_repository_impl.dart` | Updated to use `ExpenseFirebaseDataSource` |
-| `data/models/expense_model.dart` | Updated — `toJson()`/`fromJson()` now uses Firestore `Timestamp`, added `receiptUrl` field |
-| `domain/repositories/expense_repository.dart` | Added `uploadReceipt()` method |
-| `domain/usecases/upload_receipt_usecase.dart` | **New** |
-| `presentation/providers/expense_provider.dart` | Updated — now orchestrates 4 usecases: add expense → upload receipt → add transaction → update budget |
-
-### Transaction Feature — all new (`lib/features/transaction/`)
-| File | Purpose |
-|------|---------|
-| `domain/entities/transaction.dart` | Pure Dart entity with `date` field |
-| `domain/repositories/transaction_repository.dart` | Abstract interface |
-| `domain/usecases/add_transaction_usecase.dart` | Writes one transaction doc |
-| `domain/usecases/watch_transactions_usecase.dart` | Returns live `Stream<List<Transaction>>` |
-| `data/models/transaction_model.dart` | Firestore serialization |
-| `data/datasources/transaction_firebase_datasource.dart` | `.snapshots()` stream, ordered by date desc, limit 10 |
-| `data/datasources/transaction_repository_impl.dart` | Implements interface via datasource |
-
-### Budget Feature — all new (`lib/features/budget/`)
-| File | Purpose |
-|------|---------|
-| `domain/entities/budget.dart` | `monthlyLimit`, `monthlySpent`, `categoryLimits`, `categorySpending` |
-| `domain/repositories/budget_repository.dart` | Abstract interface |
-| `domain/usecases/get_budget_usecase.dart` | One-time fetch |
-| `domain/usecases/update_category_spending_usecase.dart` | Called by `ExpenseProvider` after adding an expense |
-| `data/models/budget_model.dart` | Firestore serialization |
-| `data/datasources/budget_firebase_datasource.dart` | Uses `FieldValue.increment` for atomic updates |
-| `data/datasources/budget_repository_impl.dart` | Implements interface via datasource |
-| `presentation/providers/budget_provider.dart` | Calls `GetBudgetUseCase` on `loadBudget()` |
-
-### Goals Feature — all new (`lib/features/goals/`)
-| File | Purpose |
-|------|---------|
-| `domain/entities/goal.dart` | Full Goal entity with progress helpers |
-| `domain/repositories/goals_repository.dart` | Abstract interface |
-| `domain/usecases/get_goals_usecase.dart` | Fetch all goals |
-| `domain/usecases/add_goal_usecase.dart` | Create a goal |
-| `domain/usecases/add_funds_usecase.dart` | Increments `savedAmount` via `FieldValue.increment` |
-| `domain/usecases/delete_goal_usecase.dart` | Deletes a goal doc |
-| `data/models/goal_model.dart` | Firestore serialization |
-| `data/datasources/goals_firebase_datasource.dart` | CRUD on `users/{uid}/goals` |
-| `data/datasources/goals_repository_impl.dart` | Implements interface via datasource |
-| `presentation/providers/goals_provider.dart` | All four usecases injected |
-
-### Insights Feature — all new (`lib/features/insights/`)
-| File | Purpose |
-|------|---------|
-| `domain/entities/insights.dart` | `totalSpent`, `categoryBreakdown`, `financialScore`, etc. |
-| `domain/repositories/insights_repository.dart` | Abstract interface |
-| `domain/usecases/get_insights_usecase.dart` | Fetch current month's insights |
-| `data/models/insights_model.dart` | Firestore deserialization |
-| `data/datasources/insights_firebase_datasource.dart` | Reads `users/{uid}/insights/{yyyy-MM}` |
-| `data/datasources/insights_repository_impl.dart` | Implements interface via datasource |
-| `presentation/providers/insights_provider.dart` | Calls `GetInsightsUseCase` on `loadInsights()` |
-
-### Settings Feature — updated files
-| File | What Changed |
-|------|-------------|
-| `data/datasources/settings_firebase_datasource.dart` | **New** — replaces `settings_local_datasource.dart`. Reads/writes `users/{uid}/settings/prefs` |
-| `data/datasources/settings_repository_impl.dart` | Updated to inject `SettingsFirebaseDataSource` |
-
-### Root files
-| File | What Changed |
-|------|-------------|
-| `lib/main.dart` | Full rewrite: Firebase init, anonymous auth, uid injection, all 6 providers wired |
-| `lib/firebase_options.dart` | Placeholder — **you must run `flutterfire configure`** |
-| `pubspec.yaml` | Added: `firebase_core`, `firebase_auth`, `cloud_firestore`, `firebase_storage`, `cloud_functions`, `image_picker`, `uuid` |
-| `firestore.rules` | Deny-all default; allow `users/{userId}/**` for matching uid |
-| `storage.rules` | Deny-all default; allow `receipts/{userId}/**` with size + MIME checks |
-| `functions/index.js` | Two Cloud Functions: `aggregateMonthlyInsights` and `onExpenseCreated` |
-| `functions/package.json` | Node 18, firebase-admin + firebase-functions dependencies |
+[![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B?logo=flutter)](https://flutter.dev)
+[![Firebase](https://img.shields.io/badge/Firebase-Enabled-FFCA28?logo=firebase)](https://firebase.google.com)
+[![Riverpod](https://img.shields.io/badge/State-Riverpod-00B0FF)](https://riverpod.dev)
+[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
 ---
 
-## Setup Steps (in order)
+## 📱 Features
 
-### 1. Create Firebase Project
-Go to [console.firebase.google.com](https://console.firebase.google.com) → New Project → enable **Anonymous Auth**, **Firestore**, **Storage**, and **Functions**.
+| Feature | Description |
+|---------|-------------|
+| 🔐 **Authentication** | Email/password sign-up & login with Firebase Auth |
+| 💸 **Expense Tracking** | Add, edit, and categorise expenses with optional receipt photos |
+| 📊 **Budget Manager** | Set monthly limits and per-category budgets with live usage meters |
+| 🎯 **Savings Goals** | Create goals, add funds, and celebrate completions with animation |
+| 📈 **Insights** | Visual spending breakdown with `fl_chart` pie and bar charts |
+| 🔔 **Smart Alerts** | Budget-overspend and goal-achievement notifications |
+| 🌙 **Dark Mode** | Full light/dark theme with user preference persisted to Firestore |
+| 🔒 **Secure Screen** | Flutter Window Manager hides sensitive data from recent-apps preview |
+| 📶 **Offline First** | Firestore offline persistence — works without internet |
+| 📱 **Responsive** | Single codebase scales from mobile → tablet → web (max 600 px content column) |
 
-### 2. Configure Flutter with Firebase
+---
+
+## 🏗 Architecture
+
+The project follows **Clean Architecture** with strict layer separation:
+
+```
+lib/
+├── core/
+│   ├── constants/        # AppColors, AppSizes (with breakpoints), AppStrings, AppTextStyles
+│   ├── routes/           # go_router config + named routes
+│   ├── theme/            # Light theme, Dark theme, ThemeNotifier
+│   ├── utils/            # Date, currency, validators
+│   └── widgets/          # Shared: AppButton, AppTextField, EmptyState, ErrorState, LoadingOverlay …
+│
+└── features/
+    ├── authentication/   # Email/password auth — login, signup, session observer
+    ├── expense/          # Add/edit expense, receipt upload to Firebase Storage
+    ├── budget/           # Monthly + category budgets, smart insight cards
+    ├── goals/            # Savings goals CRUD, add-funds, completion animation
+    ├── insights/         # Monthly spending charts from Firestore aggregation
+    ├── home/             # Dashboard — balance card, recent transactions stream
+    ├── settings/         # Profile, notifications, theme, biometric, change password
+    └── splash/           # Branded splash while auth state resolves
+```
+
+Each feature contains:
+- `domain/entities` → Pure Dart models
+- `domain/repositories` → Abstract interfaces
+- `domain/usecases` → Single-responsibility use cases
+- `data/datasources` → Firebase datasource implementations
+- `data/models` → Firestore serialization (`fromJson` / `toJson`)
+- `presentation/providers` → Riverpod state notifiers
+- `presentation/pages` → UI screens
+- `presentation/widgets` → Feature-specific widgets
+
+---
+
+## 🔧 Tech Stack
+
+| Layer | Library |
+|-------|---------|
+| UI Framework | Flutter 3.x |
+| State Management | `flutter_riverpod` ^2.5 |
+| Navigation | `go_router` ^14 |
+| Backend | Firebase (Auth, Firestore, Storage, Analytics, Crashlytics) |
+| Charts | `fl_chart` |
+| Fonts | `google_fonts` |
+| Image Picker | `image_picker` |
+| Local Storage | `shared_preferences` + `flutter_secure_storage` |
+| Connectivity | `connectivity_plus` |
+| Biometric | `local_auth` |
+| Code Gen | `build_runner`, `freezed`, `riverpod_generator` |
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Flutter SDK ≥ 3.0
+- Firebase CLI (`npm install -g firebase-tools`)
+- FlutterFire CLI (`dart pub global activate flutterfire_cli`)
+
+### 1. Clone the repo
 ```bash
-# Install FlutterFire CLI
-dart pub global activate flutterfire_cli
+git clone https://github.com/AneequeShahid/EduVest.git
+cd EduVest
+```
 
-# In your project root
+### 2. Create Firebase project
+Go to [console.firebase.google.com](https://console.firebase.google.com) → **New Project** → enable:
+- ✅ Email/Password Authentication
+- ✅ Cloud Firestore (production mode)
+- ✅ Firebase Storage
+- ✅ Firebase Analytics
+- ✅ Firebase Crashlytics
+
+### 3. Connect Firebase to Flutter
+```bash
 flutterfire configure
 ```
-This auto-generates `lib/firebase_options.dart` — **replace the placeholder file**.
+This auto-generates `lib/firebase_options.dart`. **Replace the placeholder file.**
 
-### 3. Install Flutter dependencies
+### 4. Install dependencies
 ```bash
 flutter pub get
 ```
 
-### 4. Deploy Security Rules
+### 5. Deploy Firestore & Storage rules
 ```bash
 firebase deploy --only firestore:rules,storage:rules
 ```
 
-### 5. Deploy Cloud Functions
-```bash
-cd functions
-npm install
-cd ..
-firebase deploy --only functions
-```
-
 ### 6. Run the app
 ```bash
+# Development
 flutter run
+
+# Release build
+flutter build apk --release
+flutter build ios --release
 ```
-The app will silently sign in anonymously, get a uid, and inject it into all datasources before `runApp()` is called.
 
 ---
 
-## Architecture Compliance Notes
+## 🔒 Security Rules
 
-- **uid rule**: `uid` is obtained once in `main.dart` via `SignInAnonymouslyUseCase` and injected into every datasource constructor. No datasource fetches it itself.
-- **Cross-feature rule**: `ExpenseProvider` calls `UpdateCategorySpendingUseCase` (budget) and `AddTransactionUseCase` (transaction) directly — the expense datasource never touches budget or transaction collections.
-- **Stream rule**: `TransactionFirebaseDataSource` creates the `.snapshots()` stream. It flows through `WatchTransactionsUseCase` → `HomeProvider.init()` → `StreamSubscription`. `HomeProvider` cancels in `dispose()`.
-- **DO NOT TOUCH files**: All files marked DO NOT TOUCH in the prompt were copied verbatim and not modified.
+### Firestore (`firestore.rules`)
+```
+match /databases/{database}/documents {
+  match /users/{userId}/{document=**} {
+    allow read, write: if request.auth != null && request.auth.uid == userId;
+  }
+}
+```
+
+### Storage (`storage.rules`)
+```
+match /b/{bucket}/o {
+  match /receipts/{userId}/{allPaths=**} {
+    allow read, write: if request.auth != null
+      && request.auth.uid == userId
+      && request.resource.size < 5 * 1024 * 1024
+      && request.resource.contentType.matches('image/.*');
+  }
+}
+```
+
+---
+
+## 📂 Firestore Data Model
+
+```
+users/{uid}/
+├── profile          → { name, email, displayName }
+├── settings/prefs   → { budgetAlerts, goalAchievements, selectedTheme, biometricEnabled … }
+├── expenses/{id}    → { amount, description, category, date, isIncome, receiptUrl }
+├── budget/current   → { totalLimit, totalSpent, categories: [...] }
+├── goals/{id}       → { title, targetAmount, savedAmount, deadline, emoji }
+├── transactions/{id}→ { amount, category, description, date, type }
+└── insights/{yyyy-MM} → { totalSpent, categoryBreakdown, financialScore }
+```
+
+---
+
+## 🧪 Testing
+
+```bash
+# Unit & widget tests
+flutter test
+
+# Integration tests
+flutter test integration_test/
+```
+
+Test utilities included:
+- `fake_cloud_firestore` for Firestore mocking
+- `firebase_auth_mocks` for Auth mocking
+- `mockito` for use-case mocking
+
+---
+
+## 📋 Key Architecture Decisions
+
+| Decision | Reason |
+|----------|--------|
+| **Riverpod over Bloc** | Less boilerplate, better DI, `ref.watch` auto-disposes |
+| **go_router** | Declarative routing with redirect guards for auth state |
+| **ConstrainedBox (600 px)** | Mobile-first layout that gracefully scales to tablet/web |
+| **Firestore streams** | Real-time updates via `.snapshots()` without polling |
+| **SecureScreen widget** | Wraps sensitive pages to hide content in recent-apps |
+| **Offline persistence** | `persistenceEnabled: true` lets app work without internet |
+| **`AppSizes.kMaxContentWidth`** | Single constant drives all responsive constraints |
+
+---
+
+## 📁 Project Structure
+
+```
+eduvest/
+├── android/
+├── ios/
+├── lib/
+│   ├── core/
+│   └── features/
+├── test/
+├── integration_test/
+├── firestore.rules
+├── storage.rules
+├── functions/
+│   ├── index.js          # aggregateMonthlyInsights + onExpenseCreated
+│   └── package.json
+└── pubspec.yaml
+```
+
+---
+
+## 👤 Developer
+
+**Aneeque Shahid**
+- GitHub: [@AneequeShahid](https://github.com/AneequeShahid)
+
+---
+
+*Built with ❤️ using Flutter & Firebase*
