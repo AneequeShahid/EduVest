@@ -20,21 +20,29 @@ class LoadingOverlay extends StatelessWidget {
     final overlay = Positioned.fill(
       child: ColoredBox(
         color: Colors.black.withValues(alpha: 0.5),
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-              ),
-              if (message != null) ...[
-                const SizedBox(height: 16),
-                Text(
-                  message!,
-                  style: const TextStyle(color: Colors.white, fontSize: 14),
+        child: Semantics(
+          label: message ?? 'Loading',
+          liveRegion: true,
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
                 ),
+                if (message != null) ...[
+                  const SizedBox(height: 16),
+                  Text(
+                    message!,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
