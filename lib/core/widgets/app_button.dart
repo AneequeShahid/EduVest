@@ -5,6 +5,8 @@ import '../constants/app_colors.dart';
 ///
 /// - [isLoading] swaps the label for a [CircularProgressIndicator].
 /// - [isOutlined] renders an outlined (secondary) style.
+/// - [semanticsLabel] provides an accessible name for screen readers;
+///   defaults to [label] if omitted.
 /// - Passing a null [onPressed] disables the button.
 class AppButton extends StatelessWidget {
   final String label;
@@ -13,6 +15,7 @@ class AppButton extends StatelessWidget {
   final bool isOutlined;
   final IconData? icon;
   final double? width;
+  final String? semanticsLabel;
 
   const AppButton({
     super.key,
@@ -22,6 +25,7 @@ class AppButton extends StatelessWidget {
     this.isOutlined = false,
     this.icon,
     this.width,
+    this.semanticsLabel,
   });
 
   @override
@@ -69,10 +73,16 @@ class AppButton extends StatelessWidget {
             child: child,
           );
 
-    return SizedBox(
-      width: width ?? double.infinity,
-      height: 54,
-      child: button,
+    return Semantics(
+      label: semanticsLabel ?? label,
+      button: true,
+      enabled: !isLoading && onPressed != null,
+      child: SizedBox(
+        width: width ?? double.infinity,
+        height: 54,
+        child: button,
+      ),
     );
   }
 }
+
